@@ -13,7 +13,8 @@ const SignupScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [secure, setSecure] = useState(true);
+  const [securePassword, setSecurePassword] = useState(true); // Separate state for password
+  const [secureConfirm, setSecureConfirm] = useState(true);   // Separate state for confirm
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -28,7 +29,7 @@ const SignupScreen = ({ navigation }) => {
     try {
       await createUserWithEmailAndPassword(auth, email, password);
       console.log('Signup successful');
-      // Navigate or store user
+       navigation.replace('Login'); // Navigate to Login 
     } catch (err) {
       console.error('Signup error:', err.message);
       setError(err.message);
@@ -59,29 +60,47 @@ const SignupScreen = ({ navigation }) => {
         autoCapitalize="none"
       />
 
-      <View style={{ position: 'relative' }}>
+      {/* Password Field */}
+      <View style={{ position: 'relative', marginBottom: 15 }}>
         <TextInput
           placeholder="Password"
           value={password}
           onChangeText={setPassword}
           style={styles.input}
-          secureTextEntry={secure}
+          secureTextEntry={securePassword}
         />
         <TouchableOpacity
           style={{ position: 'absolute', right: 12, top: 14 }}
-          onPress={() => setSecure(!secure)}
+          onPress={() => setSecurePassword(!securePassword)}
         >
-          <Icon name={secure ? 'eye-off' : 'eye'} size={20} color={COLORS.primary} />
+          <Icon 
+            name={securePassword ? 'eye-off' : 'eye'} 
+            size={20} 
+            color={COLORS.primary} 
+          />
         </TouchableOpacity>
       </View>
 
-      <TextInput
-        placeholder="Confirm Password"
-        value={confirmPassword}
-        onChangeText={setConfirmPassword}
-        style={styles.input}
-        secureTextEntry={secure}
-      />
+      {/* Confirm Password Field (Matching Style) */}
+      <View style={{ position: 'relative', marginBottom: 15 }}>
+        <TextInput
+          placeholder="Confirm Password"
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+          style={styles.input}
+          secureTextEntry={secureConfirm}
+        />
+        <TouchableOpacity
+          style={{ position: 'absolute', right: 12, top: 14 }}
+          onPress={() => setSecureConfirm(!secureConfirm)}
+        >
+          <Icon 
+            name={secureConfirm ? 'eye-off' : 'eye'} 
+            size={20} 
+            color={COLORS.primary} 
+          />
+        </TouchableOpacity>
+      </View>
 
       {loading ? (
         <ActivityIndicator color={COLORS.primary} size="large" />

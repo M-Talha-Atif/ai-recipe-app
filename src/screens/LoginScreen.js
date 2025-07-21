@@ -8,6 +8,7 @@ import { auth } from '../config/firebase';
 import Icon from 'react-native-vector-icons/Ionicons';
 import * as Animatable from 'react-native-animatable';
 
+// testing@gmail.com with same password for testing
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -21,6 +22,7 @@ const LoginScreen = ({ navigation }) => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       console.log('Login successful');
+      navigation.replace('Dashboard'); // this replaces Login in the stack
       // Navigate to Home
     } catch (err) {
       console.error('Login error:', err.message);
