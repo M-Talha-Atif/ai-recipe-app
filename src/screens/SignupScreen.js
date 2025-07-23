@@ -7,6 +7,7 @@ import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../config/firebase';
 import Icon from 'react-native-vector-icons/Ionicons';
 import * as Animatable from 'react-native-animatable';
+import { storeUserData } from '../services/userService'; // Add this import
 
 const SignupScreen = ({ navigation }) => {
   const [fullName, setFullName] = useState('');
@@ -26,13 +27,24 @@ const SignupScreen = ({ navigation }) => {
     setLoading(true);
     setError('');
 
+    
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      //  Create auth user
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      
+      //  Store additional user data in Firestore
+      await storeUserData(userCredential.user.uid, {
+        fullName,
+        email,
+      });
+
       console.log('Signup successful');
-       navigation.replace('Login'); // Navigate to Login 
+      navigation.replace('Login');
     } catch (err) {
       console.error('Signup error:', err.message);
-      setError(err.message);
+      setError(err.message.includes('email-already-in-use') 
+        ? 'Email already in use' 
+        : 'Signup failed. Please try again.');
     } finally {
       setLoading(false);
     }

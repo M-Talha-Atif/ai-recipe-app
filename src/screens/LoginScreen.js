@@ -7,6 +7,8 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../config/firebase';
 import Icon from 'react-native-vector-icons/Ionicons';
 import * as Animatable from 'react-native-animatable';
+import Constants from 'expo-constants';
+
 
 // testing@gmail.com with same password for testing
 const LoginScreen = ({ navigation }) => {
@@ -15,6 +17,7 @@ const LoginScreen = ({ navigation }) => {
   const [secure, setSecure] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  console.log('DETECTION_KEY:', Constants.expoConfig.extra.DETECTION_KEY); // Debugging line to check if key is loaded
 
   const handleLogin = async () => {
     setLoading(true);

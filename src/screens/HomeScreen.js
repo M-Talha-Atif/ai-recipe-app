@@ -1,16 +1,17 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  Image,
+  FlatList
 } from 'react-native';
 import { COLORS } from '../styles/common';
 import { Ionicons, MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import Animated from 'react-native-reanimated';
+import { auth } from '../config/firebase';
+import { getRecentRecipes } from '../services/recipeService';
 
 const ActionCard = ({ icon, title, subtitle, onPress, color }) => (
   <TouchableOpacity style={[styles.card, { borderColor: color }]} onPress={onPress}>
@@ -20,8 +21,31 @@ const ActionCard = ({ icon, title, subtitle, onPress, color }) => (
   </TouchableOpacity>
 );
 
+const RecipeCard = ({ recipe }) => (
+  <View style={styles.recipeCard}>
+    <Text style={styles.recipeTitle}>{recipe.name}</Text>
+    <Text style={styles.recipeCalories}>{recipe.calories} kcal</Text>
+    <TouchableOpacity style={styles.addBtn}>
+      <Text style={styles.addBtnText}>View</Text>
+    </TouchableOpacity>
+  </View>
+);
+
+
 const HomeScreen = () => {
   const navigation = useNavigation();
+  const [recipes, setRecipes] = useState([]);
+
+  useEffect(() => {
+    const fetchRecipes = async () => {
+      const userId = auth.currentUser?.uid;
+      if (userId) {
+        const recent = await getRecentRecipes(userId);
+        setRecipes(recent);
+      }
+    };
+    fetchRecipes();
+  }, []);
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 24 }}>
@@ -33,7 +57,7 @@ const HomeScreen = () => {
           icon={<Ionicons name="camera" size={32} color={COLORS.primary} />}
           title="Scan Fridge"
           subtitle="Upload a fridge photo"
-          onPress={() => console.log('Open camera')}
+          onPress={() => navigation.navigate('Scan')}
           color={COLORS.primary}
         />
 
@@ -41,7 +65,7 @@ const HomeScreen = () => {
           icon={<FontAwesome5 name="keyboard" size={28} color={COLORS.primary} />}
           title="Manual Input"
           subtitle="Type ingredients manually"
-          onPress={() => console.log('Navigate to manual input')}
+          onPress={() => navigation.navigate('ManualInput')}
           color={COLORS.primary}
         />
       </View>
@@ -51,7 +75,7 @@ const HomeScreen = () => {
           icon={<MaterialIcons name="qr-code-scanner" size={32} color={COLORS.primary} />}
           title="Scan Barcode"
           subtitle="Detect groceries via barcode"
-          onPress={() => console.log('Open barcode scanner')}
+          onPress={() => navigation.navigate('BarcodeScanner')}
           color={COLORS.primary}
         />
 
@@ -74,6 +98,21 @@ const HomeScreen = () => {
         <Text style={styles.alertText}>🥬 Your spinach expires in 2 days.</Text>
         <Text style={styles.alertText}>🍄 That mushroom? It’s evolving.</Text>
       </View>
+
+      {/* Recipes Carousel */}
+      {recipes.length > 0 && (
+        <>
+          <Text style={styles.sectionHeader}>Recently Generated Recipes</Text>
+          <FlatList
+            data={recipes}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => <RecipeCard recipe={item} />}
+            contentContainerStyle={{ paddingVertical: 12 }}
+          />
+        </>
+      )}
     </ScrollView>
   );
 };
@@ -82,36 +121,42 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
+    paddingTop: 20,
   },
   welcome: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 26,
+    fontWeight: '700',
     color: COLORS.text,
-    marginTop: 32,
+    marginTop: 20,
+    marginBottom: 6,
   },
   subtitle: {
-    fontSize: 16,
-    color: COLORS.text,
-    marginBottom: 20,
+    fontSize: 15,
+    color: '#666',
+    marginBottom: 24,
   },
   cardRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 20,
+    marginBottom: 16,
   },
   card: {
     flex: 1,
-    height: 130,
-    borderRadius: 16,
-    borderWidth: 2,
+    height: 140,
+    borderRadius: 14,
+    borderWidth: 1.5,
     marginHorizontal: 6,
     padding: 16,
     backgroundColor: '#fff',
     justifyContent: 'space-between',
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
   },
   cardIcon: {
-    marginBottom: 8,
+    marginBottom: 10,
   },
   cardTitle: {
     fontSize: 16,
@@ -119,43 +164,83 @@ const styles = StyleSheet.create({
     color: COLORS.text,
   },
   cardSubtitle: {
-    fontSize: 12,
-    color: '#666',
+    fontSize: 13,
+    color: '#777',
   },
   tipBox: {
-    backgroundColor: '#FFE4B5',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 24,
+    backgroundColor: '#FFEFD5',
+    padding: 18,
+    borderRadius: 14,
+    marginTop: 10,
+    marginBottom: 28,
   },
   tipTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '700',
     color: COLORS.primary,
-    marginBottom: 4,
+    marginBottom: 6,
   },
   tipText: {
     color: COLORS.text,
+    fontSize: 14,
+    lineHeight: 20,
   },
   sectionHeader: {
     fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 8,
+    fontWeight: '700',
+    marginBottom: 12,
+    marginTop: 24,
     color: COLORS.primary,
   },
   alertBox: {
     backgroundColor: '#fff',
-    padding: 12,
-    borderRadius: 12,
+    padding: 16,
+    borderRadius: 14,
     elevation: 2,
     shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    marginBottom: 24,
   },
   alertText: {
     color: COLORS.text,
-    marginBottom: 4,
+    fontSize: 14,
+    marginBottom: 6,
+  },
+  recipeCard: {
+    width: 200,
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    padding: 16,
+    marginRight: 14,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  recipeTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: 6,
+  },
+  recipeCalories: {
+    fontSize: 13,
+    color: '#888',
+    marginBottom: 14,
+  },
+  addBtn: {
+    backgroundColor: COLORS.primary,
+    paddingVertical: 8,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  addBtnText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 14,
   },
 });
+
 
 export default HomeScreen;
