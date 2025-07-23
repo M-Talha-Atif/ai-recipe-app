@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Alert, TextInput } from 'reac
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { getAuth } from 'firebase/auth';
+import { Timestamp } from 'firebase/firestore';
 import { COLORS } from '../styles/common';
 import { saveBarcodeItem } from '../services/barcodeService';
 
@@ -38,21 +39,26 @@ export default function BarcodeScanScreen({ navigation }) {
         return;
       }
 
-      await saveBarcodeItem(userId, barcodeData, itemName, expiryDate);
-      Alert.alert('Success', 'Item saved!');
+      await saveBarcodeItem(
+        userId, 
+        barcodeData, 
+        itemName, 
+        Timestamp.fromDate(expiryDate)
+      );
+      
+      Alert.alert('Success', 'Item saved with funny reminders!');
       navigation.goBack();
     } catch (error) {
       Alert.alert('Error', error.message);
     }
   };
 
-  
-    if (!permission) {
-    return <Text style={{ textAlign: 'center', marginTop: 50 }}>Requesting camera permission...</Text>;
+  if (!permission) {
+    return <Text style={styles.permissionText}>Requesting camera permission...</Text>;
   }
 
-    if (!permission.granted) {
-    return <Text style={{ textAlign: 'center', marginTop: 50 }}>No access to camera</Text>;
+  if (!permission.granted) {
+    return <Text style={styles.permissionText}>No access to camera</Text>;
   }
 
   return (
@@ -74,7 +80,10 @@ export default function BarcodeScanScreen({ navigation }) {
             onChangeText={setItemName}
             style={styles.input}
           />
-          <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.dateButton}>
+          <TouchableOpacity 
+            onPress={() => setShowDatePicker(true)} 
+            style={styles.dateButton}
+          >
             <Text style={styles.dateButtonText}>
               {`Expiry Date: ${expiryDate.toDateString()}`}
             </Text>
@@ -102,10 +111,10 @@ export default function BarcodeScanScreen({ navigation }) {
   );
 }
 
-// Keep your existing styles
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
   formContainer: { flex: 1, justifyContent: 'center', padding: 20 },
+  permissionText: { textAlign: 'center', marginTop: 50 },
   label: { fontSize: 18, fontWeight: 'bold', marginBottom: 10, color: COLORS.text },
   input: {
     borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 12,

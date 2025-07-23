@@ -1,5 +1,6 @@
-import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { addDoc, collection, serverTimestamp, getDocs, query, where, orderBy } from 'firebase/firestore';
 import { db } from '../config/firebase';
+import { scheduleExpirationReminders, sendImmediateBarcodeNotification } from './notificationService';
 
 export const saveBarcodeItem = async (userId, barcodeData, itemName, expiryDate) => {
   try {
@@ -10,6 +11,14 @@ export const saveBarcodeItem = async (userId, barcodeData, itemName, expiryDate)
       expiryDate,
       createdAt: serverTimestamp()
     });
+
+    // Schedule notifications for this new item
+    await scheduleExpirationReminders(userId);
+
+
+        // Send immediate 10-second confirmation
+    await sendImmediateBarcodeNotification(itemName);
+
     return docRef.id;
   } catch (error) {
     console.error('Error saving barcode item:', error);

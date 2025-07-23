@@ -20,10 +20,28 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ],
+      "package": "com.talhaatif573.FridgeBuddy"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow FridgeBuddy to access the camera for barcode scanning."
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "afb1f6c9-afee-4568-9a05-b55d9e834064"
+      }
     }
   }
 }
