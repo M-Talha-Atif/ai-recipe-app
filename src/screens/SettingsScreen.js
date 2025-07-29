@@ -1,27 +1,64 @@
-// screens/SettingsScreen.js
-import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, Switch, Button, Platform, TouchableOpacity } from 'react-native';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, StyleSheet, Button, Alert } from 'react-native';
+import { getAuth, signOut } from 'firebase/auth';
+import { getFirestore, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { COLORS } from '../styles/common';
 
-const SettingsScreen = () => {
+const SettingsScreen = ({ navigation }) => {
+  const auth = getAuth();
+  const db = getFirestore();
+
   const [name, setName] = useState('');
-  const [email] = useState('user@example.com'); // fixed email
-  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
-  const [reminderTime, setReminderTime] = useState(new Date());
-  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [email, setEmail] = useState('');
 
-  const toggleSwitch = () => setNotificationsEnabled(previousState => !previousState);
+  // Load user data from Firestore
+  useEffect(() => {
+  const loadUserProfile = async () => {
+    const user = auth.currentUser;
+    if (!user) return;
 
-  const onChangeTime = (event, selectedDate) => {
-    const currentDate = selectedDate || reminderTime;
-    setShowTimePicker(Platform.OS === 'ios');
-    setReminderTime(currentDate);
+    setEmail(user.email);
+
+    try {
+      const userRef = doc(db, 'Users', user.uid); 
+      const snapshot = await getDoc(userRef);
+      if (snapshot.exists()) {
+        const data = snapshot.data();
+        setName(data.fullName || '');
+      }
+    } catch (err) {
+      Alert.alert('Error', 'Failed to load profile.');
+    }
   };
 
-  const handleSave = () => {
-    // Save logic (to backend or local storage)
-    alert('Profile updated!');
+  loadUserProfile();
+}, []);
+
+   
+
+  const handleSave = async () => {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    try {
+      const userRef = doc(db, 'Users', user.uid);
+      await updateDoc(userRef, {
+        fullName: name,
+        updatedAt: new Date(),
+      });
+      Alert.alert('Success', 'Name updated successfully!');
+    } catch (error) {
+      Alert.alert('Error', 'Failed to update name.');
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      navigation.replace('Login'); // or navigation.navigate if using stack
+    } catch (error) {
+      Alert.alert('Error', 'Logout failed.');
+    }
   };
 
   return (
@@ -29,7 +66,7 @@ const SettingsScreen = () => {
       <Text style={styles.heading}>Edit Profile</Text>
       <TextInput
         style={styles.input}
-        placeholder="Name"
+        placeholder="Full Name"
         value={name}
         onChangeText={setName}
       />
@@ -41,31 +78,8 @@ const SettingsScreen = () => {
       />
       <Button title="Save" onPress={handleSave} color={COLORS.primary} />
 
-      <View style={styles.section}>
-        <Text style={styles.heading}>Notifications</Text>
-        <View style={styles.row}>
-          <Text style={styles.label}>Enable Reminders</Text>
-          <Switch
-            trackColor={{ false: '#ccc', true: COLORS.primary }}
-            thumbColor={notificationsEnabled ? '#fff' : '#f4f3f4'}
-            onValueChange={toggleSwitch}
-            value={notificationsEnabled}
-          />
-        </View>
-
-        {notificationsEnabled && (
-          <TouchableOpacity onPress={() => setShowTimePicker(true)}>
-            <Text style={styles.timeText}>Reminder Time: {reminderTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
-          </TouchableOpacity>
-        )}
-        {showTimePicker && (
-          <DateTimePicker
-            value={reminderTime}
-            mode="time"
-            display="default"
-            onChange={onChangeTime}
-          />
-        )}
+      <View style={styles.logoutSection}>
+        <Button title="Logout" color="red" onPress={handleLogout} />
       </View>
     </View>
   );
@@ -98,23 +112,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#eee',
     color: '#888',
   },
-  section: {
-    marginTop: 32,
-  },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  label: {
-    fontSize: 16,
-    color: COLORS.text,
-  },
-  timeText: {
-    fontSize: 16,
-    color: COLORS.link,
-    textAlign: 'center',
-    marginTop: 8,
+  logoutSection: {
+    marginTop: 40,
   },
 });

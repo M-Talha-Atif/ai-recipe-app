@@ -50,7 +50,7 @@ export async function generateRecipe(ingredients) {
   }
 }
 
-export async function addRecipeToFirestore(recipe, userId) {
+export async function addRecipeToFirestore(recipe, userId, ingredients = []) {
   try {
     if (!userId) {
       throw new Error('User ID is required to save recipe');
@@ -58,14 +58,15 @@ export async function addRecipeToFirestore(recipe, userId) {
 
     const recipeWithMetadata = {
       ...recipe,
-      userId, // Add user ID to the recipe
+      userId,
+      ingredients, //  Save the ingredients used
       type: 'generative',
-      createdAt: serverTimestamp(), // Use server timestamp instead of local Date
+      createdAt: serverTimestamp(),
       lastUpdated: serverTimestamp()
     };
 
     const docRef = await addDoc(collection(db, 'Recipes'), recipeWithMetadata);
-    
+
     console.log('Recipe saved with ID:', docRef.id);
     return docRef.id;
   } catch (error) {
@@ -73,6 +74,31 @@ export async function addRecipeToFirestore(recipe, userId) {
     throw new Error('Failed to save recipe');
   }
 }
+
+
+// export async function addRecipeToFirestore(recipe, userId) {
+//   try {
+//     if (!userId) {
+//       throw new Error('User ID is required to save recipe');
+//     }
+
+//     const recipeWithMetadata = {
+//       ...recipe,
+//       userId, // Add user ID to the recipe
+//       type: 'generative',
+//       createdAt: serverTimestamp(), // Use server timestamp instead of local Date
+//       lastUpdated: serverTimestamp()
+//     };
+
+//     const docRef = await addDoc(collection(db, 'Recipes'), recipeWithMetadata);
+    
+//     console.log('Recipe saved with ID:', docRef.id);
+//     return docRef.id;
+//   } catch (error) {
+//     console.error('Firestore Error:', error);
+//     throw new Error('Failed to save recipe');
+//   }
+// }
 
 export async function getRecentRecipes(userId) {
   try {

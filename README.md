@@ -8,6 +8,8 @@ use expo based packages rather than native ones currently to currently avoid mod
 for local build
 # Generate native code
 npx expo prebuild
+eas build -p android --profile preview
 # Build debug APK
 cd android
 ./gradlew assembleDebug
+npm install to install modules

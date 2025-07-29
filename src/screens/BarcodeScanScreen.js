@@ -6,6 +6,7 @@ import { getAuth } from 'firebase/auth';
 import { Timestamp } from 'firebase/firestore';
 import { COLORS } from '../styles/common';
 import { saveBarcodeItem } from '../services/barcodeService';
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function BarcodeScanScreen({ navigation }) {
   const [scanned, setScanned] = useState(false);
@@ -14,6 +15,7 @@ export default function BarcodeScanScreen({ navigation }) {
   const [expiryDate, setExpiryDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [permission, requestPermission] = useCameraPermissions();
+    const [isScreenFocused, setIsScreenFocused] = useState(true); 
 
   const auth = getAuth();
   
@@ -22,6 +24,16 @@ export default function BarcodeScanScreen({ navigation }) {
       requestPermission();
     }
   }, []);
+
+    useFocusEffect(
+    React.useCallback(() => {
+      setIsScreenFocused(true);
+      return () => {
+        setIsScreenFocused(false); // <-- this disables camera on screen blur
+        setScanned(false);         // optional: reset scan state
+      };
+    }, [])
+  );
 
   const handleBarcodeScanned = ({ data }) => {
     setScanned(true);
@@ -63,7 +75,7 @@ export default function BarcodeScanScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      {!scanned ? (
+       {isScreenFocused && !scanned ? (
         <CameraView
           onBarcodeScanned={scanned ? undefined : handleBarcodeScanned}
           barcodeScannerSettings={{
@@ -71,7 +83,8 @@ export default function BarcodeScanScreen({ navigation }) {
           }}
           style={StyleSheet.absoluteFillObject}
         />
-      ) : (
+      )
+      : (
         <View style={styles.formContainer}>
           <Text style={styles.label}>Barcode: {barcodeData}</Text>
           <TextInput

@@ -3,8 +3,9 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import * as Animatable from 'react-native-animatable';
 import { COLORS } from '../theme/colors';
-import { generateRecipe, addRecipeToFirestore } from '../services/recipeService';
 import { getAuth } from 'firebase/auth';
+import { generateRecipe, addRecipeToFirestore, getUserRecipes } from '../services/recipeService';
+
 
 
 export default function RecipeGenerationScreen({ route }) {
@@ -29,7 +30,8 @@ export default function RecipeGenerationScreen({ route }) {
   const handleAddRecipe = async (recipe) => {
     try {
     const userId = auth.currentUser?.uid;
-     await addRecipeToFirestore(recipe, userId);
+    await addRecipeToFirestore(recipe, userId, ingredients);
+
     Alert.alert('Success', 'Recipe added to your collection!');
     } catch (error) {
       Alert.alert('Error', error.message);

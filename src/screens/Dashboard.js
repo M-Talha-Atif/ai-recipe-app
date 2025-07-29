@@ -2,6 +2,7 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import HomeScreen from './HomeScreen';
 import SettingsScreen from './SettingsScreen';
+import FridgeHistoryScreen from './FridgeHistoryScreen'; 
 import { Ionicons } from '@expo/vector-icons';
 
 const Tab = createBottomTabNavigator();
@@ -11,7 +12,12 @@ export default function Dashboard() {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ color, size }) => {
-          let iconName = route.name === 'Home' ? 'home' : 'settings';
+          let iconName;
+
+          if (route.name === 'Home') iconName = 'home';
+          else if (route.name === 'Settings') iconName = 'settings';
+          else if (route.name === 'Fridge History') iconName = 'heart'; 
+
           return <Ionicons name={iconName} size={size} color={color} />;
         },
         headerShown: false,
@@ -21,6 +27,7 @@ export default function Dashboard() {
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen name="Fridge History" component={FridgeHistoryScreen} />
       <Tab.Screen name="Settings" component={SettingsScreen} />
     </Tab.Navigator>
   );
