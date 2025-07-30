@@ -1,6 +1,7 @@
-import { addDoc, collection, serverTimestamp, getDocs, query, where, orderBy } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import { scheduleExpirationReminders, sendImmediateBarcodeNotification } from './notificationService';
+import { addDoc, collection, serverTimestamp, getDocs, query, where, orderBy, deleteDoc, doc } from 'firebase/firestore';
+
 
 export const saveBarcodeItem = async (userId, barcodeData, itemName, expiryDate) => {
   try {
@@ -41,6 +42,17 @@ export const getUserBarcodeItems = async (userId) => {
     }));
   } catch (error) {
     console.error('Error getting user barcode items:', error);
+    throw error;
+  }
+};
+
+export const deleteBarcodeItem = async (itemId) => {
+  try {
+    const itemRef = doc(db, 'Barcodes', itemId);
+    await deleteDoc(itemRef);
+    console.log(`Deleted item ${itemId}`);
+  } catch (error) {
+    console.error('Error deleting barcode item:', error);
     throw error;
   }
 };

@@ -7,6 +7,7 @@ properly set the navigation
 use expo based packages rather than native ones currently to currently avoid module not found error on device
 for local build
 # Generate native code
+npx expo run
 npx expo prebuild
 eas build -p android --profile preview
 # Build debug APK

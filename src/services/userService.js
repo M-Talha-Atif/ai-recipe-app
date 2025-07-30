@@ -26,3 +26,4 @@ export const getUserData = async (userId) => {
     throw error;
   }
 };
+

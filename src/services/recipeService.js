@@ -137,3 +137,17 @@ export async function getUserRecipes(userId) {
     throw new Error('Failed to fetch recipes');
   }
 }
+
+
+// Delete a recipe by its document ID
+export async function deleteRecipe(recipeId) {
+  try {
+    const { deleteDoc, doc } = await import('firebase/firestore');
+    const recipeRef = doc(db, 'Recipes', recipeId);
+    await deleteDoc(recipeRef);
+    console.log('Recipe deleted:', recipeId);
+  } catch (error) {
+    console.error('Error deleting recipe:', error);
+    throw new Error('Failed to delete recipe');
+  }
+}

@@ -1,7 +1,7 @@
 import 'react-native-gesture-handler';
 import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
+import { createStackNavigator, CardStyleInterpolators } from '@react-navigation/stack';
 import * as Notifications from 'expo-notifications';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { auth } from './src/config/firebase';
@@ -14,6 +14,7 @@ import Dashboard from './src/screens/Dashboard';
 import RecipeGenerationScreen from './src/screens/RecipeGenerationScreen';
 import ManualIngredientScreen from './src/screens/ManualIngredientScreen';
 import BarcodeScanScreen from './src/screens/BarcodeScanScreen';
+import SmartTipsScreen from './src/screens/SmartTipsScreen';
 
 const Stack = createStackNavigator();
 
@@ -44,6 +45,15 @@ export default function App() {
         <Stack.Screen name="MakeRecipe" component={RecipeGenerationScreen} />
         <Stack.Screen name="ManualInput" component={ManualIngredientScreen} />
         <Stack.Screen name="BarcodeScanner" component={BarcodeScanScreen} />
+        <Stack.Screen
+          name="SmartTips"
+          component={SmartTipsScreen}
+          options={{
+            title: 'Smart Tips',
+            cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
+            gestureEnabled: true,
+          }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );
